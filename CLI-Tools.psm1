@@ -87,9 +87,20 @@ function Top {
 		#Top line of output
 		$topLine = $strSystemTime + " " + $strUptime + ",`t" + $userCount + " users,`tload: " + ([string]($totalTime / 100)).substring(0,4)
 		
+		#Get total process counts
+		$cntProcesses = $polledProcesses.Length
+		#Get number of processes that have used CPU since last update
+		$cntRunningProcesses = ($polledProcesses | Where-Object {$_.Span -gt 0 }).Length
+		#Get number of sleeping processes. We're assuming if it hasn't used CPU that it is asleep
+		$cntSleepingProcesses = $cntProcesses - $cntRunningProcesses
+		
+		#Tasks (2nd) line of output
+		$secondLine = "Tasks:`t" + $cntProcesses + " total,`t" + $cntRunningProcesses + " running,`t" + $cntSleepingProcesses + " sleeping"
+		
 		#Clear the screen and write output
 		cls
 		Write-Host $topLine
+		Write-Host $secondLine
 		Write-Host "MB Memory:`t`t" ($totalMem/1MB) "total,`t" $freeMem "free,`t" ($totalMem/1MB - $freeMem) "used"
 		$polledProcesses | Sort-Object -Property Span,MS -Desc | Select-Object -First $maxLines -Expand Process | Format-Table
 	}
