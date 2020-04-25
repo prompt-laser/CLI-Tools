@@ -84,9 +84,12 @@ function Top {
 		$strUptime = "up " + $uptime.days + " day(s), " + `
 			$uptime.hours.ToString().PadLeft(2,"0") + ":" + $uptime.minutes.ToString().PadLeft(2,"0")
 		
+		#Top line of output
+		$topLine = $strSystemTime + "" + $strUptime + ",`t" + $userCount + " users,`tload:" + ([string]($totalTime / 100)).substring(0,4)
+		
 		#Clear the screen and write output
 		cls
-		Write-Host "" + $strSystemTime + "" + $strUptime + ",`t" + $userCount + " users,`tload:" + ([string]($totalTime / 100)).substring(0,4)
+		Write-Host $topLine
 		Write-Host "MB Memory:`t`t" ($totalMem/1MB) "total,`t" $freeMem "free,`t" ($totalMem/1MB - $freeMem) "used"
 		$polledProcesses | Sort-Object -Property Span,MS -Desc | Select-Object -First $maxLines -Expand Process | Format-Table
 	}
