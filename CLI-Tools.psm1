@@ -81,7 +81,7 @@ function Top {
 			":" + (Get-Date).Second.ToString().PadLeft(2,"0")
 		
 		#Uptime string
-		$strUptime = "up" + $uptime.days + "day(s)," + `
+		$strUptime = "up " + $uptime.days + " day(s), " + `
 			$uptime.hours.ToString().PadLeft(2,"0") + ":" + $uptime.minutes.ToString().PadLeft(2,"0")
 		
 		#Clear the screen and write output
