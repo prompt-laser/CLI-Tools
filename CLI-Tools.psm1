@@ -73,7 +73,7 @@ function Top {
 		#End process polling and timing section
 		
 		#Maximum processes to show in output
-		$maxLines = $host.UI.RawUI.WindowSize.Height - 8
+		$maxLines = $host.UI.RawUI.WindowSize.Height - 9
 		
 		#Current time string
 		$strSystemTime = (get-date).Hour.ToString().PadLeft(2,"0") + `
