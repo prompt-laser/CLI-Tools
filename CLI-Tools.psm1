@@ -75,9 +75,18 @@ function Top {
 		#Maximum processes to show in output
 		$maxLines = $host.UI.RawUI.WindowSize.Height - 8
 		
+		#Current time string
+		$strSystemTime = (get-date).Hour.ToString().PadLeft(2,"0") + `
+			":" + (Get-Date).Hour.Tostring().PadLeft(2,"0") + `
+			":" + (Get-Date).Second.ToString().PadLeft(2,"0")
+		
+		#Uptime string
+		$strUptime = "up" + $uptime.days + "day(s)," + `
+			$uptime.hours.ToString().PadLeft(2,"0") + ":" + $uptime.minutes.ToString().PadLeft(2,"0")
+		
 		#Clear the screen and write output
 		cls
-		Write-Host "up" $uptime.days "days," $uptime.hours.ToString().PadLeft(2,"0") ":" $uptime.minutes.ToString().PadLeft(2,"0") ", " $userCount " users, load:" ([string]($totalTime / 100)).substring(0,4)
+		Write-Host $strSystemTime $strUptime ", " $userCount " users, load:" ([string]($totalTime / 100)).substring(0,4)
 		Write-Host "MB Memory: `t" ($totalMem/1MB) "total,`t" $freeMem "free,`t" ($totalMem/1MB - $freeMem) "used"
 		$polledProcesses | Sort-Object -Property Span,MS -Desc | Select-Object -First $maxLines -Expand Process | Format-Table
 	}
