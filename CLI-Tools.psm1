@@ -11,61 +11,61 @@ function Top {
 	#>
 	
 	$polledProcesses = Get-Process
-	while($true){
+	While($true){
 		#Calculate total/free memory
-		$freeMem = (Get-Counter "\memory\available mbytes").readings.split("`n")[1]
+		$freeMem = (Get-Counter "\memory\available mbytes").Readings.Split("`n")[1]
 		$totalMem = 0
-		foreach($c in (get-wmiObject win32_physicalMemory).capacity){
+		ForEach($c in (Get-WmiObject Win32_PhysicalMemory).Capacity){
 			$totalMem += $c
 		}
 		
 		#Get user count
 		$users = @()
-		foreach($u in (get-wmiobject win32_process |where {$_.name -eq "explorer.exe"}).getowner().user){
+		ForEach($u in (Get-WmiObject Win32_Process | Where-Object { $_.Name -eq "explorer.exe" }).GetOwner().User){
 			$users += @($u)
 		}
 		$userCount = @($users).length
 		
 		#Calculate processor load
-		$rawTimes = (get-counter "\processor information(*)\% processor time").readings
-		$arrayTimes = $rawTimes.split("`n");
+		$rawTimes = (Get-Counter "\Processor Information(*)\% Processor Time").Readings
+		$arrayTimes = $rawTimes.Split("`n");
 		$times = @()
-		for($i = 5; $i -lt @($arrayTimes).length; $i = $i + 1){
-			if($i % 3 -eq 1){
+		For($i = 5; $i -lt @($arrayTimes).Length; $i = $i + 1){
+			If($i % 3 -eq 1){
 				$times += @($arrayTimes[$i])
 			}
 		}
 		$totalTime = 0
-		foreach($t in $times){
+		ForEach($t in $times){
 			$totalTime += $t
 		}
 		
 		#Calculate systme uptime
-		$uptime = new-timespan `
-					([DateTime]::parseExact([string]((get-wmiobject win32_operatingsystem).lastbootuptime).split(".")[0],"yyyyMMddHHmmss", $null)) `
-					(get-date)
+		$uptime = New-Timespan `
+					([DateTime]::parseExact([string]((Get-WmiObject Win32_OperatingSystem).LastBootupTime).Split(".")[0],"yyyyMMddHHmmss", $null)) `
+					(Get-Date)
 					
 		#Begin process polling and timing section
 		$processes = @()
 		$processes = Get-Process
 		$tempPolledProcesses = @()
-		foreach($p in $processes){
+		ForEach($p in $processes){
 			$matched = $false
-			foreach($pP in $polledProcesses){
+			ForEach($pP in $polledProcesses){
 				if($p.Id.Equals($pP.Process.Id)){
 					$tempPolledProcesses += New-Object PSObject -Property @{
-						"Process"=$p;
-						"Span"=$p.TotalProcessorTime.TotalMilliseconds-$pP.MS;
-						"MS"=$p.TotalProcessorTime.TotalMilliseconds
+						"Process"	= $p;
+						"Span"		= $p.TotalProcessorTime.TotalMilliseconds - $pP.MS;
+						"MS"		= $p.TotalProcessorTime.TotalMilliseconds
 					}
 					$matched = $true
 				}
 			}
 			if(-not $matched){
 				$tempPolledProcesses += New-Object PSObject -Property @{
-					"Process"=$p;
-					"Span"=$p.TotalProcessorTime.TotalSeconds-$p.TotalProcessorTime.TotalSeconds;
-					"MS"=$p.TotalProcessorTime.TotalMilliSeconds
+					"Process"	= $p;
+					"Span"		= $p.TotalProcessorTime.TotalSeconds-$p.TotalProcessorTime.TotalSeconds;
+					"MS"		= $p.TotalProcessorTime.TotalMilliSeconds
 					}
 			}
 		}
@@ -77,8 +77,8 @@ function Top {
 		
 		#Clear the screen and write output
 		cls
-		Write-Host "up" $uptime.days "days," $uptime.hours ":" $uptime.minutes ", " $userCount " users, load:" ([string]($totalTime / 100)).substring(0,4)
+		Write-Host "up" $uptime.days "days," $uptime.hours.PadLeft(2,"0") ":" $uptime.minutes.PadLeft(2,"0") ", " $userCount " users, load:" ([string]($totalTime / 100)).substring(0,4)
 		Write-Host "MB Memory: `t" ($totalMem/1MB) "total,`t" $freeMem "free,`t" ($totalMem/1MB - $freeMem) "used"
-		$polledProcesses | Sort-Object -Property Span,MS -Desc| Select-Object -First $maxLines -Expand Process | Format-Table
+		$polledProcesses | Sort-Object -Property Span,MS -Desc | Select-Object -First $maxLines -Expand Process | Format-Table
 	}
 }
