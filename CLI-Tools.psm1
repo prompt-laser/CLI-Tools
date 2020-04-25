@@ -85,7 +85,7 @@ function Top {
 			$uptime.hours.ToString().PadLeft(2,"0") + ":" + $uptime.minutes.ToString().PadLeft(2,"0")
 		
 		#Top line of output
-		$topLine = $strSystemTime + "" + $strUptime + ",`t" + $userCount + " users,`tload:" + ([string]($totalTime / 100)).substring(0,4)
+		$topLine = $strSystemTime + " " + $strUptime + ",`t" + $userCount + " users,`tload:" + ([string]($totalTime / 100)).substring(0,4)
 		
 		#Clear the screen and write output
 		cls
