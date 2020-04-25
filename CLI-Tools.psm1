@@ -86,8 +86,8 @@ function Top {
 		
 		#Clear the screen and write output
 		cls
-		Write-Host $strSystemTime $strUptime ", " $userCount " users, load:" ([string]($totalTime / 100)).substring(0,4)
-		Write-Host "MB Memory: `t" ($totalMem/1MB) "total,`t" $freeMem "free,`t" ($totalMem/1MB - $freeMem) "used"
+		Write-Host "" + $strSystemTime + "" + $strUptime + ",`t" + $userCount + " users,`tload:" + ([string]($totalTime / 100)).substring(0,4)
+		Write-Host "MB Memory:`t`t" ($totalMem/1MB) "total,`t" $freeMem "free,`t" ($totalMem/1MB - $freeMem) "used"
 		$polledProcesses | Sort-Object -Property Span,MS -Desc | Select-Object -First $maxLines -Expand Process | Format-Table
 	}
 }
