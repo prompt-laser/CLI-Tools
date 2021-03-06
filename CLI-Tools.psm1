@@ -105,3 +105,96 @@ function Top {
 		$polledProcesses | Sort-Object -Property Span,MS -Desc | Select-Object -First $maxLines -Expand Process | Format-Table
 	}
 }
+
+function Get-NetworkHosts {
+    <#
+        .SYNOPSIS
+        Does a ping scan of a subnet for reachable hosts
+   
+        .PARAMETER IPAddress
+        Address in the subnet you wish to scan
+   
+        .PARAMETER NetworkBits
+        Number of bits in the network
+   
+        .PARAMETER SubnetMask
+        Subnet mask of the network
+		
+		.PARAMETER ReachableOnly
+		Return only the hosts that are reachable. Defaults to true
+       
+        .PARAMETER Timeout
+        Timeout for ping requests. Defaults to 500ms
+		
+		.EXAMPLE
+		Get-NetworkHosts 192.168.0.0 24
+		
+		Return all hosts that are up in the 192.168.0.0/24 subnet
+		
+		.EXAMPLE
+		Get-NetworkHosts 192.168.0.0 24 $false
+		
+		Return all hosts in the 192.168.0.0/24 subnet regardless of whether they are up or down
+    #>
+ 
+    param(
+        [Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
+        [string]$IPAddress,
+        [Parameter(ParameterSetName='Mask',Mandatory=$true,Position=1)]
+        [string]$SubnetMask,
+        [Parameter(ParameterSetName='Bits',Mandatory=$true,Position=1)]
+        [int]$NetworkBits,
+		[Parameter(Mandatory=$false,Position=2)]
+		[bool]$ReachableOnly = $true,
+        [Parameter(Mandatory=$false,Position=3)]
+        [int]$Timeout = 500
+    )
+ 
+    function toBinary($dottedDecimal){
+        $dottedDecimal.split(".") | %{$binary=$binary + $([convert]::toString($_,2).padleft(8,"0"))}
+        return $binary
+    }
+ 
+    function toDottedDecimal ($binary){
+        $i = 0
+        do {$dottedDecimal += "." + [string]$([convert]::toInt32($binary.substring($i,8),2)); $i+=8 } while ($i -le 24)
+        return $dottedDecimal.substring(1)
+    }
+ 
+    If($SubnetMask){
+        $bnSubnet = toBinary($SubnetMask)
+        $NetworkBits = $bnSubnet.IndexOf("0")
+    }
+    $bnAddress = toBinary($IPAddress)
+    $StaticBits = $bnAddress.substring(0,$NetworkBits)
+ 
+    $CurrentAddress = 1
+    $LastAddress = "0".padleft(32-$NetworkBits,"1")
+    $Addresses = @()
+    $i = 0
+    While($CurrentAddress -le ([Convert]::ToInt32($LastAddress,2))){
+        $wrkAddress = [Convert]::ToString($CurrentAddress,2).padleft(32-$NetworkBits,"0")
+        $wrkAddress = -join($StaticBits,$wrkAddress)
+        $wrkAddress = toDottedDecimal($wrkAddress)
+        If( (Get-WmiObject Win32_PingStatus -Filter "Address='$wrkAddress' and Timeout=$Timeout").ReplySize -ne $null ){
+            $Addresses += New-Object PSObject -Property @{
+                'IPAddress' = $wrkAddress
+                'Up' = $true
+            }
+        }Else{
+            $Addresses += New-Object PSObject -Property @{
+                'IPAddress' = $wrkAddress
+                'Up' = $false
+            }
+        }
+        Write-Progress -Activity "Finding Hosts" -PercentComplete ($CurrentAddress/([Convert]::toInt32($LastAddress,2))*100)
+        $CurrentAddress = $CurrentAddress + 1
+        $i = $i + 1
+        $wrkAddress = ""
+    }
+	if($ReachableOnly){
+		return $Addresses | Where-Object {$_.Up -eq $true}
+	}else{
+		return $Addresses
+	}
+}
