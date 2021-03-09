@@ -198,3 +198,28 @@ function Get-NetworkHosts {
 		return $Addresses
 	}
 }
+
+function free {
+	<#
+		.SYNOPSIS
+		Free gives a quick snapshot of total system memory, the amount of memory used,
+		and the amount available for allocation
+	#>
+	
+	$totalMem = 0
+	ForEach($c in (Get-WmiObject Win32_PhysicalMemory).Capacity){
+		$totalMem += $c
+	}
+
+	$freeMem = (Get-Counter "\memory\available mbytes").Readings.Split("`n")[1]
+
+	$usedMem = $totalMem/1MB - $freeMem
+	
+	$memory = New-Object PSObject -Property @{
+		'Total'	= $totalMem/1MB;
+		'Used'	= $usedMem;
+		'Free'	= $freeMem;
+	}
+	
+	return $memory
+}
