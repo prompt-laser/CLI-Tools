@@ -1,4 +1,4 @@
-function Top {
+function Get-RunningSnapshot {
 	<#
 		.SYNOPSIS
 		Top shows vital system stats including system uptime, logged on users,
@@ -199,7 +199,7 @@ function Get-NetworkHosts {
 	}
 }
 
-function free {
+function Get-Memory {
 	<#
 		.SYNOPSIS
 		Free gives a quick snapshot of total system memory, the amount of memory used,
@@ -223,3 +223,8 @@ function free {
 	
 	return $memory
 }
+
+New-Alias -Name free -Value Get-Memory
+New-Alias -Name top -Value Get-RunningSnapshot
+
+Export-ModuleMember -Alias * -Function *
