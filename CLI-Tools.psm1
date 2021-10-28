@@ -202,7 +202,7 @@ function Get-NetworkHosts {
 function Get-Memory {
 	<#
 		.SYNOPSIS
-		Free gives a quick snapshot of total system memory, the amount of memory used,
+		Get-Memory gives a quick snapshot of total system memory, the amount of memory used,
 		and the amount available for allocation
 	#>
 	
@@ -224,7 +224,65 @@ function Get-Memory {
 	return $memory
 }
 
+function Get-DriveSpace {
+	<#
+		.SYNOPSIS
+		Get-DriveSpace gives a quick snapshot of system volumes. It shows the filesystem, size
+		of disk, free space, used percentage, and mountpoints
+		
+		.PARAMETER Human
+		Formats space to human readable numbers.
+	#>
+	
+	param(
+		[Parameter(Mandatory=$false,Position=0)]
+		[switch]$Human
+	)
+	
+	function FormatHumanReadable($number) {
+		if($number / 1pb -gt 1){
+			return ($number / 1pb).ToString("#.##") + "pB"
+		}elseif($number / 1tb -gt 1){
+			return ($number / 1tb).ToString("#.##") + "tB"
+		}elseif($number / 1gb -gt 1){
+			return ($number / 1gb).ToString("#.##") + "gB"
+		}elseif($number / 1mb -gt 1){
+			return ($number / 1mb).ToString("#.##") + "mB"
+		}elseif($number / 1kb -gt 1){
+			return ($number / 1kb).ToString("#.##") + "kB"
+		}else{
+			return $number
+		}
+	}
+		
+	$rawDisks = Get-WmiObject Win32_Volume | Where-Object {$_.Caption -notlike "\\*"}
+	$disks = @()
+	foreach($d in $rawDisks){
+		if($Human){
+			$disks += New-Object PSObject -Property @{
+				'FileSystem'	= $d.FileSystem;
+				'Size'			= FormatHumanReadable($d.Capacity);
+				'Free'			= FormatHumanReadable($d.FreeSpace);
+				'Use%'			= [int](($d.FreeSpace / $d.Capacity) * 100);
+				'MountPoint'	= $d.Name;
+			}
+		}else{
+			$disks += New-Object PSObject -Property @{
+				'FileSystem'	= $d.FileSystem;
+				'Size'			= $d.Capacity;
+				'Free'			= $d.FreeSpace;
+				'Use%'			= [int]($d.FreeSpace / $d.Capacity);
+				'MountPoint'	= $d.Name;
+			}
+		}
+	}
+	
+	
+	return $disks | Format-Table	
+}
+
 New-Alias -Name free -Value Get-Memory
 New-Alias -Name top -Value Get-RunningSnapshot
+New-Alias -Name df -Value Get-DriveSpace
 
 Export-ModuleMember -Alias * -Function *
