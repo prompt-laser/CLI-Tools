@@ -281,8 +281,42 @@ function Get-DriveSpace {
 	return $disks | Format-Table	
 }
 
+function Get-RegExMatches {	
+	<#
+		.SYNOPSIS
+		Get-RegExMatches searches an input string for matches to the pattern parameter
+		
+		.PARAMETER Pattern
+		RegEx pattern to search the input object for
+		
+		.PARAMETER InputObject
+		Text to search
+	#>
+	
+	param(
+		[Parameter(Mandatory=$true,Position=0)]
+		[String]$Pattern,
+		
+		[Parameter(Mandatory=$false,Position=1,ValueFromPipeline=$true)]
+		[String[]]$InputObject
+	)
+	
+	process{
+		$matches = @()
+		
+		foreach($line in $InputObject){
+			if($line -like ("*" + $Pattern + "*")){
+				$matches += $line
+			}
+		}
+		
+		return $matches
+	}
+}
+
 New-Alias -Name free -Value Get-Memory
 New-Alias -Name top -Value Get-RunningSnapshot
 New-Alias -Name df -Value Get-DriveSpace
+New-Alias -Name grep -Value Get-RegExMatches
 
 Export-ModuleMember -Alias * -Function *
