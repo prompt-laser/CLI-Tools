@@ -314,9 +314,29 @@ function Get-RegExMatches {
 	}
 }
 
+function New-File {
+	<#
+		.SYNOPSIS
+		New-EmptyFile will create a new empty file at the provided location
+		
+		.PARAMETER Location
+		Location to create the new file. Just a filename will create it in the current directory.
+	#>
+	
+	param(
+		[Parameter(Mandatory=$true,Position=0)]
+		[String]$Location
+	)
+	
+	$null | Out-File $location
+}
+	
+	
+
 New-Alias -Name free -Value Get-Memory
 New-Alias -Name top -Value Get-RunningSnapshot
 New-Alias -Name df -Value Get-DriveSpace
 New-Alias -Name grep -Value Get-RegExMatches
+New-Alias -Name touch -Value New-File
 
 Export-ModuleMember -Alias * -Function *
