@@ -1,3 +1,9 @@
+<#
+	Filename:       CLI-Tools.psm1
+	Author:         prompt-laser
+	Description:    Introducing some UNIX-like functions to powershel
+#>
+
 function Get-RunningSnapshot {
 	<#
 		.SYNOPSIS
@@ -330,13 +336,39 @@ function New-File {
 	
 	$null | Out-File $location
 }
+
+function Get-EndOfFile {
 	
+	param(
+		[Parameter(Mandatory=$true,Position=0)]
+		$Filename
+	)
 	
+	$contents = Get-Content $Filename
+	for($i = -10; $i -lt 0; $i++){
+		Write-Host $contents[$i]
+	}
+}
+
+function Get-StartOfFile{
+
+	param(
+		[Parameter(Mandatory=$true,Position=0)]
+		$Filename
+	)
+	
+	$contents = Get-Content $Filename
+	for($i = 0; $i -lt 10; $i++){
+		Write-Host $contents[$i]
+	}
+}
 
 New-Alias -Name free -Value Get-Memory
 New-Alias -Name top -Value Get-RunningSnapshot
 New-Alias -Name df -Value Get-DriveSpace
 New-Alias -Name grep -Value Get-RegExMatches
 New-Alias -Name touch -Value New-File
+New-Alias -Name tail -Value Get-EndOfFile
+New-Alias -Name head -Value Get-StartOfFile
 
 Export-ModuleMember -Alias * -Function *
