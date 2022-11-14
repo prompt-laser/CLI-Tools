@@ -350,7 +350,7 @@ function Get-EndOfFile {
 	}
 }
 
-function Get-StartOfFile{
+function Get-StartOfFile {
 
 	param(
 		[Parameter(Mandatory=$true,Position=0)]
@@ -363,6 +363,30 @@ function Get-StartOfFile{
 	}
 }
 
+function Get-SystemUptime {
+	$year = (get-wmiobject win32_operatingsystem).lastbootuptime.substring(0,4)
+	$month = (get-wmiobject win32_operatingsystem).lastbootuptime.substring(4,2)
+	$day = (get-wmiobject win32_operatingsystem).lastbootuptime.substring(6,2)
+	$hour = (get-wmiobject win32_operatingsystem).lastbootuptime.substring(8,2)
+	$minute = (get-wmiobject win32_operatingsystem).lastbootuptime.substring(10,2)
+	$second = (get-wmiobject win32_operatingsystem).lastbootuptime.substring(12,2)
+	
+	$uptime = ((Get-Date) - (Get-Date -Year $year -Month $month -Day $day -Hour $hour -Minute $minute -Second $second))
+	Write-Host $uptime.Days "days" $uptime.Hours : $uptime.Minutes : $uptime.Seconds
+	
+}
+
+function Update-CLITools {
+	try {
+		Get-Command git | Out-Null
+	} catch {
+		Write-Host "This function requires git to be installed"
+	}
+	$path = (Get-Module CLI-Tools).Path
+	$path = $path.Replace((Get-Module CLI-Tools).Name + ".psm1", "")
+	git -C $path pull
+}
+
 New-Alias -Name free -Value Get-Memory
 New-Alias -Name top -Value Get-RunningSnapshot
 New-Alias -Name df -Value Get-DriveSpace
@@ -370,5 +394,6 @@ New-Alias -Name grep -Value Get-RegExMatches
 New-Alias -Name touch -Value New-File
 New-Alias -Name tail -Value Get-EndOfFile
 New-Alias -Name head -Value Get-StartOfFile
+New-Alias -Name uptime -Value Get-SystemUptime
 
 Export-ModuleMember -Alias * -Function *
