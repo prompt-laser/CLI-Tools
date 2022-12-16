@@ -83,7 +83,7 @@ function Get-RunningSnapshot {
 		
 		#Current time string
 		$strSystemTime = (get-date).Hour.ToString().PadLeft(2,"0") + `
-			":" + (Get-Date).Hour.Tostring().PadLeft(2,"0") + `
+			":" + (Get-Date).Minute.Tostring().PadLeft(2,"0") + `
 			":" + (Get-Date).Second.ToString().PadLeft(2,"0")
 		
 		#Uptime string
