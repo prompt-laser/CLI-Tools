@@ -340,13 +340,50 @@ function New-File {
 function Get-EndOfFile {
 	
 	param(
-		[Parameter(Mandatory=$true,Position=0)]
-		$Filename
+		[Parameter(ParameterSetName="Follow",Mandatory=$true,Position=1)]
+		[String]$Name,
+		
+		[Parameter(ParameterSetName="Follow",Mandatory=$false,Position=0)]
+		[switch]$Follow,
+		
+		[Parameter(ParameterSetName="Static",Mandatory=$true,Position=0)]
+		[String]$Path
 	)
 	
-	$contents = Get-Content $Filename
-	for($i = -10; $i -lt 0; $i++){
-		Write-Host $contents[$i]
+	if($Follow){ 
+		$filename = $Name
+	}else{
+		$filename = $Path
+	}
+	
+	$contents = Get-Content $filename
+	if($contents -ne $null){
+		
+		$contents = $contents.split("`n")
+		
+		if ($contents.length -lt 10){
+			$init = $contents.length
+		}else{
+			$init = 10
+		}
+		
+		for($i = -$init; $i -lt 0; $i++){
+			Write-Host $contents[$i]
+		}
+	}
+
+	if($Follow){
+		while($true){
+			$new = Get-Content $filename
+			if($new -ne $null){
+				$new = $new.split("`n")
+				if($new.length -ne $contents.length){
+					$contents = $new
+					Write-Host $new[-1]
+				}
+			}
+			sleep(.1)
+		}
 	}
 }
 
