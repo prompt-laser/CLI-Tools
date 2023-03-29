@@ -338,6 +338,19 @@ function New-File {
 }
 
 function Get-EndOfFile {
+	   <#
+        .SYNOPSIS
+        Gets the last ten lines of a file
+   
+        .PARAMETER Name
+        File to get the last ten lines of
+		
+		.PARAMETER Path
+		File to get the last ten lines of
+		
+		.PARAMETER Follow
+		Will continue to scan the last ten lines of a file for changes
+		#>
 	
 	param(
 		[Parameter(ParameterSetName="Follow",Mandatory=$true,Position=1)]
@@ -388,6 +401,13 @@ function Get-EndOfFile {
 }
 
 function Get-StartOfFile {
+	   <#
+        .SYNOPSIS
+        Gets first 10 lines of given file
+   
+        .PARAMETER Filename
+        File you would like the first ten lines of
+		#>
 
 	param(
 		[Parameter(Mandatory=$true,Position=0)]
@@ -413,6 +433,23 @@ function Get-SystemUptime {
 	
 }
 
+function Get-ExecutableFilepath {
+	   <#
+        .SYNOPSIS
+        Shows full path to executables, or which module a command comes from
+   
+        .PARAMETER Command
+        Command you would like the path for
+		#>
+	
+	param(
+		[Parameter(Mandatory=$true,Position=0)]
+		[String]$Command
+	)
+	
+	(Get-Command $Command).Source
+}
+
 function Update-CLITools {
 	try {
 		Get-Command git | Out-Null
@@ -432,5 +469,6 @@ New-Alias -Name touch -Value New-File
 New-Alias -Name tail -Value Get-EndOfFile
 New-Alias -Name head -Value Get-StartOfFile
 New-Alias -Name uptime -Value Get-SystemUptime
+New-Alias -Name which	-Value Get-ExecutableFilepath
 
 Export-ModuleMember -Alias * -Function *
